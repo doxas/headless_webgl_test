@@ -4,7 +4,8 @@ const ChromeLauncher          = require('chrome-launcher');
 const ChromeDebuggingProtocol = require('chrome-remote-interface');
 
 const TARGET_PORT = 9222;
-const TARGET_URL  = 'https://wgld.org';
+// const TARGET_URL  = 'https://wgld.org';
+const TARGET_URL  = 'http://localhost:9090';
 
 let chrome;   // chrome process
 let protocol; // debugging protocol
@@ -44,6 +45,43 @@ ChromeLauncher.launch({
 })
 .then(() => {
     return page.loadEventFired();
+})
+.then(() => {
+    return new Promise((resolve) => {
+        const recursiveFunction = (callback) => {
+            runtime.consoleAPICalled()
+            .then((ret) => {
+                console.log(ret);
+                if(
+                    ret.args != null &&
+                    Array.isArray(ret.args) === true &&
+                    ret.args.length > 0
+                ){
+                    let called = false;
+                    ret.args.map((v) => {
+                        if(
+                            v.type === 'string' &&
+                            v.hasOwnProperty('value') === true &&
+                            v.value.includes('rendering complete') === true
+                        ){
+                            called = true;
+                            console.log('console api called');
+                            console.log(ret);
+                            callback();
+                        }
+                    });
+                    if(called !== true){
+                        recursiveFunction(callback);
+                    }
+                }else{
+                    recursiveFunction(callback);
+                }
+            });
+        };
+        recursiveFunction(() => {
+            resolve();
+        });
+    });
 })
 .then(() => {
     return page.captureScreenshot({format: 'png'});
