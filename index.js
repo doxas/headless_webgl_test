@@ -1,4 +1,5 @@
 
+const fs                      = require('fs');
 const ChromeLauncher          = require('chrome-launcher');
 const ChromeDebuggingProtocol = require('chrome-remote-interface');
 
@@ -24,6 +25,34 @@ launchChrome()
     page     = debuggingProtocol.Page;
     dom      = debuggingProtocol.DOM;
     runtime  = debuggingProtocol.Runtime;
+})
+.then(() => {
+    return Promise.all([
+        network.enable(),
+        page.enable(),
+        dom.enable(),
+        runtime.enable(),
+    ]);
+})
+.then(() => {
+    return page.navigate({url: 'https://wgld.org'});
+})
+.then(() => {
+    return page.loadEventFired();
+})
+.then(() => {
+    return page.captureScreenshot({format: 'png', fromSurface: true});
+})
+.then((screenshot) => {
+    return new Promise((resolve, reject) => {
+        fs.writeFile('screenshot.png', screenshot.data, 'base64', (err) => {
+            if(err != null){
+                reject(err);
+                return;
+            }
+            resolve();
+        });
+    });
 })
 .catch((err) => {
     throw err;
