@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/doxas/headless_webgl_test#readme",
   "devDependencies": {
-    "chrome-launcher": "^0.10.7"
+    "chrome-launcher": "^0.10.7",
+    "chrome-remote-interface": "^0.27.1"
   }
 }
