@@ -3,18 +3,25 @@ const fs                      = require('fs');
 const ChromeLauncher          = require('chrome-launcher');
 const ChromeDebuggingProtocol = require('chrome-remote-interface');
 
-let chrome;
-let protocol;
+const TARGET_PORT = 9222;
+const TARGET_URL  = 'https://wgld.org';
+
+let chrome;   // chrome process
+let protocol; // debugging protocol
 let network;
 let page;
 let dom;
 let runtime;
 
-launchChrome()
-.then((ch) => {
-    chrome = ch;
+ChromeLauncher.launch({
+    port: TARGET_PORT,
+    chromeFlags: [
+        '--window-size=1024,512',
+        '--headless',
+    ]
 })
-.then(() => {
+.then((chromeProcess) => {
+    chrome = chromeProcess;
     return ChromeDebuggingProtocol({
         port: chrome.port,
     });
@@ -25,8 +32,6 @@ launchChrome()
     page     = debuggingProtocol.Page;
     dom      = debuggingProtocol.DOM;
     runtime  = debuggingProtocol.Runtime;
-})
-.then(() => {
     return Promise.all([
         network.enable(),
         page.enable(),
@@ -35,21 +40,24 @@ launchChrome()
     ]);
 })
 .then(() => {
-    return page.navigate({url: 'https://wgld.org'});
+    return page.navigate({url: TARGET_URL});
 })
 .then(() => {
     return page.loadEventFired();
 })
 .then(() => {
-    return page.captureScreenshot({format: 'png', fromSurface: true});
+    return page.captureScreenshot({format: 'png'});
 })
 .then((screenshot) => {
     return new Promise((resolve, reject) => {
-        fs.writeFile('screenshot.png', screenshot.data, 'base64', (err) => {
+        // from index.js running path
+        let outPath = `./screenshot/ss_${Date.now()}.png`;
+        fs.writeFile(outPath, screenshot.data, 'base64', (err) => {
             if(err != null){
                 reject(err);
                 return;
             }
+            console.log(`captured [${outPath}] from "${TARGET_URL}"`)
             resolve();
         });
     });
@@ -68,17 +76,4 @@ launchChrome()
         });
     }
 });
-
-function launchChrome(headless = true) {
-    return ChromeLauncher.launch({
-        port: 9222,
-        chromeFlags: [
-            // '--window-size=412,732',
-            // '--disable-gpu',
-
-            headless ? '--headless' : '',
-        ],
-        startingUrl: 'https://wgld.org'
-    });
-}
 
