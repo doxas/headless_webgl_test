@@ -1,0 +1,22 @@
+{
+  "name": "headless_webgl_test",
+  "version": "0.0.1",
+  "description": "test for headless browser",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doxas/headless_webgl_test.git"
+  },
+  "author": "doxas",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/doxas/headless_webgl_test/issues"
+  },
+  "homepage": "https://github.com/doxas/headless_webgl_test#readme",
+  "devDependencies": {
+    "chrome-launcher": "^0.10.7"
+  }
+}
