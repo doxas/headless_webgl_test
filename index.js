@@ -84,12 +84,12 @@ ChromeLauncher.launch({
     });
 })
 .then(() => {
-    return page.captureScreenshot({format: 'png'});
+    return page.captureScreenshot({format: 'jpeg', quality: 100});
 })
 .then((screenshot) => {
     return new Promise((resolve, reject) => {
         // from index.js running path
-        let outPath = `./screenshot/ss_${Date.now()}.png`;
+        let outPath = `./screenshot/ss_${Date.now()}.jpg`;
         fs.writeFile(outPath, screenshot.data, 'base64', (err) => {
             if(err != null){
                 reject(err);
